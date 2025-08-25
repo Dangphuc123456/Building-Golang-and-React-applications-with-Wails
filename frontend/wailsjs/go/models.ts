@@ -71,6 +71,7 @@ export namespace models {
 	export class Equipment {
 	    id: number;
 	    name: string;
+	    category: string;
 	    purchase_date: string;
 	    status: string;
 	    supplier_id?: number;
@@ -86,6 +87,7 @@ export namespace models {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.id = source["id"];
 	        this.name = source["name"];
+	        this.category = source["category"];
 	        this.purchase_date = source["purchase_date"];
 	        this.status = source["status"];
 	        this.supplier_id = source["supplier_id"];

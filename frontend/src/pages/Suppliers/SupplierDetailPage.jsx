@@ -46,7 +46,23 @@ export default function SupplierDetailPage() {
   const indexOfFirst = indexOfLast - rowsPerPage;
   const currentEquipments = equipments.slice(indexOfFirst, indexOfLast);
 
+  
+  const [isSmall, setIsSmall] = useState(window.innerWidth < 1200);
+  useEffect(() => {
+    const handleResize = () => setIsSmall(window.innerWidth < 1200);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
+  function formatShortCurrency(value) {
+    if (value == null) return '0 ₫';
+    if (value >= 1_000_000_000) return (value / 1_000_000_000).toFixed(1).replace(/\.0$/, '') + 'tỷ';
+    if (value >= 1_000_000) return (value / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'tr';
+    if (value >= 1_000) return (value / 1_000).toFixed(1).replace(/\.0$/, '') + 'k';
+    return value.toString() + ' ₫';
+  }
+
+  const formatCurrency = (value) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Number(value || 0));
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
     const date = new Date(dateStr);
@@ -123,11 +139,11 @@ export default function SupplierDetailPage() {
         <Breadcrumbs />
         {/* Thông tin nhà cung cấp */}
         <div className="col-md-4 mb-4">
-          <div style={{border:"1px solid #cac2c2ff", borderRadius:"10px", padding:"20px", backgroundColor:"#fff", boxShadow:"0 4px 12px rgba(0,0,0,0.1)", transition:"all 0.3s ease"}}>
+          <div style={{ border: "1px solid #cac2c2ff", borderRadius: "10px", padding: "20px", backgroundColor: "#fff", boxShadow: "0 4px 12px rgba(0,0,0,0.1)", transition: "all 0.3s ease" }}>
             <h5>Thông tin nhà cung cấp</h5>
             <Form.Group className="mb-3 mt-4">
               <Form.Label>Tên nhà cung cấp</Form.Label>
-              <Form.Control as="textarea" value={supplier.name} readOnly rows={3} />
+              <Form.Control as="textarea" value={supplier.name} readOnly rows={2} />
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Số điện thoại</Form.Label>
@@ -215,10 +231,15 @@ export default function SupplierDetailPage() {
                         {e.status}
                       </span>
                     </td>
-                    <td>{e.price != null ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Number(e.price)) : '0 ₫'}</td>
+                    <td className="text-center">
+                      {isSmall
+                        ? formatShortCurrency(e.price)
+                        : formatCurrency(e.price)
+                      }
+                    </td>
                     <td>
-                      <Button variant="warning" size="sm" className="me-2" onClick={() => handleEdit(e)}>✏️ Sửa</Button>
-                      <Button variant="danger" size="sm" onClick={() => handleDeleteClick(e)}>🗑️ Xóa</Button>
+                      <Button variant="warning" size="sm" className="me-2" onClick={() => handleEdit(e)}>✏️Sửa</Button>
+                      <Button variant="danger" size="sm" onClick={() => handleDeleteClick(e)}>🗑️Xóa</Button>
                     </td>
                   </tr>
                 ))}

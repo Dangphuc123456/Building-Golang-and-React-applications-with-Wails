@@ -106,7 +106,23 @@ export default function DashboardPage() {
       tooltip: { callbacks: { label: ctx => `${ctx.label}: ${ctx.parsed}` } }
     }
   };
+  const [isSmall, setIsSmall] = useState(window.innerWidth < 1200);
 
+
+  useEffect(() => {
+    const handleResize = () => setIsSmall(window.innerWidth < 1200);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+
+  function formatShortCurrency(value) {
+    if (value == null) return '0 ₫';
+    if (value >= 1_000_000_000) return (value / 1_000_000_000).toFixed(1).replace(/\.0$/, '') + 'tỷ';
+    if (value >= 1_000_000) return (value / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'tr';
+    if (value >= 1_000) return (value / 1_000).toFixed(1).replace(/\.0$/, '') + 'k';
+    return value.toString() + ' ₫';
+  }
   const barData = useMemo(() => ({
     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
     datasets: [{
@@ -285,10 +301,10 @@ export default function DashboardPage() {
                                 color: 'white',
                                 fontWeight: 'bold',
                                 textAlign: 'center',
-                                minWidth: '60px',       
-                                maxWidth: '100%',       
+                                minWidth: '60px',
+                                maxWidth: '100%',
                                 boxSizing: 'border-box',
-                                whiteSpace: 'nowrap',   
+                                whiteSpace: 'nowrap',
                                 overflow: 'hidden',
                                 textOverflow: 'ellipsis',
                               }}
@@ -297,7 +313,12 @@ export default function DashboardPage() {
                             </span>
                           </td>
                           <td>{e.purchase_date ? new Date(e.purchase_date).toLocaleDateString('vi-VN') : '-'}</td>
-                          <td className="text-center">{e.price != null ? formatCurrency(e.price) : '0 ₫'}</td>
+                          <td className="text-center">
+                            {isSmall
+                              ? formatShortCurrency(e.price)
+                              : formatCurrency(e.price)
+                            }
+                          </td>
                         </tr>
                       ))
                     )}

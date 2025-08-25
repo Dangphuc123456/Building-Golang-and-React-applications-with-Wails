@@ -2,21 +2,13 @@ package main
 
 import (
 	"context"
-	"Device-t/backend/config" 
+	"Device-t/backend/config"
+	"Device-t/backend/models"
 	"Device-t/backend/repositories"
 	"Device-t/backend/services"
-	"Device-t/backend/models"
-	"database/sql"
 	"os"
-    _ "github.com/go-sql-driver/mysql"
 )
-func initDB() *sql.DB {
-    db, err := sql.Open("mysql", "user:password@tcp(localhost:3306)/device_t")
-    if err != nil {
-        panic(err)
-    }
-    return db
-}
+
 type App struct {
 	ctx context.Context
 
@@ -30,6 +22,9 @@ type App struct {
 
 // Khởi tạo App với tất cả service
 func NewApp() *App {
+	// Kết nối DB SQLite
+	config.ConnectDB()
+
 	// Khởi tạo các repository với cùng 1 DB
 	userRepo := &repositories.UserRepository{DB: config.DB}
 	equipRepo := &repositories.EquipmentRepository{DB: config.DB}

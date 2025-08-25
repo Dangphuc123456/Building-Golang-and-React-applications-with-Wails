@@ -108,6 +108,25 @@ export default function EquipmentPage() {
       toast.error('Xóa thất bại: ' + (err?.message || err));
     }
   };
+  
+  const [isSmall, setIsSmall] = useState(window.innerWidth < 1200);
+
+ 
+  useEffect(() => {
+    const handleResize = () => setIsSmall(window.innerWidth < 1200);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  function formatShortCurrency(value) {
+    if (value == null) return '-';
+    if (value >= 1_000_000_000) return (value / 1_000_000_000).toFixed(1).replace(/\.0$/, '') + 'tỷ';
+    if (value >= 1_000_000) return (value / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'tr';
+    if (value >= 1_000) return (value / 1_000).toFixed(1).replace(/\.0$/, '') + 'k';
+    return value.toString() + ' ₫';
+  }
+
+  const formatCurrency = (value) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Number(value || 0));
 
 
   const totalPages = Math.max(1, Math.ceil(equipmentList.length / rowsPerPage));
@@ -117,9 +136,8 @@ export default function EquipmentPage() {
 
 
   return (
-    <div className="container mt-2">
+    <div className="container ">
       <ToastContainer />
-
       {/* Header + nút thêm */}
       <div className="d-flex align-items-center justify-content-between mb-3">
         <h3 className="mb-0">Danh sách thiết bị</h3>
@@ -156,13 +174,13 @@ export default function EquipmentPage() {
                         color: "#0d6efd",
                         textDecoration: "none",
                         display: "-webkit-box",
-                        WebkitLineClamp: 1,
+                        WebkitLineClamp: 2,
                         WebkitBoxOrient: "vertical",
                         overflow: "hidden",
                         textOverflow: "ellipsis",
                         textAlign: "center",
-                        maxWidth: "250px", 
-                        margin: "0 auto",  
+                        maxWidth: "250px",
+                        margin: "0 auto",
                       }}
                       title={e.name}>
                       {e.name}
@@ -197,7 +215,7 @@ export default function EquipmentPage() {
                       <span
                         style={{
                           display: "-webkit-box",
-                          WebkitLineClamp: 1,
+                          WebkitLineClamp: 2,
                           WebkitBoxOrient: "vertical",
                           overflow: "hidden",
                           textOverflow: "ellipsis",
@@ -212,10 +230,14 @@ export default function EquipmentPage() {
                       </span>
                     </OverlayTrigger>
                   </td>
-                  <td>{e.price != null ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Number(e.price)) : '0 ₫'}</td>
+                  <td>
+                    {e.price != null
+                      ? (isSmall ? formatShortCurrency(e.price) : formatCurrency(e.price))
+                      : '0 ₫'}
+                  </td>
                   <td>
                     <Button variant="warning" size="sm" className="me-2" onClick={() => handleEdit(e)}>✏️Sửa</Button>
-                    <Button variant="danger" size="sm" onClick={() => handleDelete(e)}>🗑️ Xóa</Button>
+                    <Button variant="danger" size="sm" onClick={() => handleDelete(e)}>🗑️Xóa</Button>
                   </td>
                 </tr>
               ))

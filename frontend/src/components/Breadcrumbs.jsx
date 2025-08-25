@@ -63,7 +63,7 @@ export default function Breadcrumbs() {
     const buildPath = (index) => '/' + breadcrumbSegments.slice(0, index + 1).join('/');
 
     return (
-        <nav aria-label="breadcrumb" style={{ marginBottom: '15px' }}>
+        <nav aria-label="breadcrumb" style={{ marginBottom: '5px' }}>
             <ol className="breadcrumb">
                 <li className="breadcrumb-item">
                     <Link to="/">Home</Link>

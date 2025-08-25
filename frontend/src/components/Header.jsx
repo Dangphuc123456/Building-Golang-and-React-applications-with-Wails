@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Sun, User, Search, LogOut, LogIn } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { SearchAll, Logout } from "wailsjs/go/main/App";
+import { SearchAll, Logout, GetAllUsers } from "wailsjs/go/main/App";
 import "../styles/Header.css";
 
 export default function Header() {
@@ -9,25 +9,38 @@ export default function Header() {
   const [results, setResults] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const [user, setUser] = useState({ username: "" });
-  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
+  const [user, setUser] = useState({ id: null, username: "" });
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [brightness, setBrightness] = useState(1);
+  const [allUsers, setAllUsers] = useState([]);
   const navigate = useNavigate();
 
-  // Load user info
+  // Load token và user từ localStorage, đồng thời load danh sách users
   useEffect(() => {
+    const storedToken = localStorage.getItem("token");
     const storedUser = localStorage.getItem("user");
-    if (storedUser) setUser(JSON.parse(storedUser));
+
+    if (storedToken && storedUser) {
+      setIsLoggedIn(true);
+      const parsedUser = JSON.parse(storedUser);
+      setUser(parsedUser);
+
+      GetAllUsers()
+        .then((users) => setAllUsers(users))
+        .catch((err) => console.error("Lỗi lấy danh sách users:", err));
+    } else {
+      setIsLoggedIn(false);
+      setUser({ id: null, username: "" });
+    }
   }, []);
 
-  // Handle logout
   const handleLogout = () => {
     Logout()
       .then(() => {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
         setIsLoggedIn(false);
-        setUser({ username: "" });
+        setUser({ id: null, username: "" });
         navigate("/login");
       })
       .catch((err) => console.error(err));
@@ -35,7 +48,6 @@ export default function Header() {
 
   const handleLoginRedirect = () => navigate("/login");
 
-  // Search effect
   useEffect(() => {
     if (!keyword) return setResults([]);
     const timer = setTimeout(() => {
@@ -50,21 +62,35 @@ export default function Header() {
 
   const handleSelectResult = (item) => {
     switch (item.type) {
-      case "equipment": navigate(`/equipments/${item.id}`); break;
-      case "supplier": navigate(`/suppliers/${item.id}`); break;
-      case "maintenance": navigate(`/maintenance/${item.id}`); break;
-      case "repair": navigate(`/repairs/${item.id}`); break;
-      default: break;
+      case "equipment":
+        navigate(`/equipments/${item.id}`);
+        break;
+      case "supplier":
+        navigate(`/suppliers/${item.id}`);
+        break;
+      case "maintenance":
+        navigate(`/maintenance/${item.id}`);
+        break;
+      case "repair":
+        navigate(`/repairs/${item.id}`);
+        break;
+      default:
+        break;
     }
     setKeyword("");
     setShowDropdown(false);
   };
 
-  // Brightness slider
   const handleBrightnessChange = (e) => {
     const value = Number(e.target.value);
     setBrightness(value);
     document.body.style.filter = `brightness(${value})`;
+  };
+
+  const displayUsername = () => {
+    if (!isLoggedIn || !user.id) return "Guest";
+    const foundUser = allUsers.find((u) => u.id === user.id);
+    return foundUser ? foundUser.username : user.username;
   };
 
   return (
@@ -121,7 +147,7 @@ export default function Header() {
 
         <div className="header-user" onClick={() => setUserMenuOpen(!userMenuOpen)}>
           <User size={20} className="icon-hover" />
-          <span>{isLoggedIn ? user.username || "SA" : "Guest"}</span>
+          <span>{displayUsername()}</span>
           {userMenuOpen && (
             <div className="user-dropdown">
               {isLoggedIn ? (

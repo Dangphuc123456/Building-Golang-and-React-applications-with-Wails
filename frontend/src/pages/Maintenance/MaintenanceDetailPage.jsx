@@ -13,6 +13,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Breadcrumbs from '../../components/Breadcrumbs';
+import Select from "react-select";
 
 export default function MaintenanceDetailPage() {
   const { id } = useParams();
@@ -34,7 +35,12 @@ export default function MaintenanceDetailPage() {
   });
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-
+  const technicianOptions = users
+    .filter(u => u.role === "technician")
+    .map(u => ({
+      value: u.id,
+      label: `${u.id} - ${u.username}`
+    }));
 
   const fetchMaintenance = async () => {
     try {
@@ -141,6 +147,25 @@ export default function MaintenanceDetailPage() {
     }
   };
 
+  const [isSmall, setIsSmall] = useState(window.innerWidth < 1200);
+
+
+  useEffect(() => {
+    const handleResize = () => setIsSmall(window.innerWidth < 1200);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  function formatShortCurrency(value) {
+    if (value == null) return '-';
+    if (value >= 1_000_000_000) return (value / 1_000_000_000).toFixed(1).replace(/\.0$/, '') + 'tỷ';
+    if (value >= 1_000_000) return (value / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'tr';
+    if (value >= 1_000) return (value / 1_000).toFixed(1).replace(/\.0$/, '') + 'k';
+    return value.toString() + ' ₫';
+  }
+
+  const formatCurrency = (value) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Number(value || 0));
+
 
   const totalRecords = maintenance.repair_histories.length;
   const totalPages = Math.ceil(totalRecords / rowsPerPage);
@@ -154,11 +179,21 @@ export default function MaintenanceDetailPage() {
         <Breadcrumbs />
         {/* Thông tin maintenance */}
         <div className="col-md-4 mb-4">
-          <div style={{border:"1px solid #cac2c2ff", borderRadius:"10px", padding:"20px", backgroundColor:"#fff", boxShadow:"0 4px 12px rgba(0,0,0,0.1)", transition:"all 0.3s ease"}}>
+          <div style={{ border: "1px solid #cac2c2ff", borderRadius: "10px", padding: "20px", backgroundColor: "#fff", boxShadow: "0 4px 12px rgba(0,0,0,0.1)", transition: "all 0.3s ease" }}>
             <h5>Thông tin lịch bảo trì</h5>
             <Form.Group className="mb-3">
               <Form.Label>Thiết bị</Form.Label>
-              <Form.Control as="textarea" value={getEquipmentName(maintenance.equipment_id || maintenance.EquipmentID)} readOnly />
+              <Form.Control
+                as="textarea"
+                value={getEquipmentName(maintenance.equipment_id || maintenance.EquipmentID)}
+                readOnly
+                rows={2}
+                style={{ overflow: 'hidden' }}
+                onInput={e => {
+                  e.target.style.height = 'auto';
+                  e.target.style.height = e.target.scrollHeight + 'px';
+                }}
+              />
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Kỹ thuật viên</Form.Label>
@@ -173,7 +208,17 @@ export default function MaintenanceDetailPage() {
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Mô tả</Form.Label>
-              <Form.Control as="textarea" value={maintenance.description} readOnly />
+              <Form.Control
+                as="textarea"
+                value={maintenance.description}
+                readOnly
+                rows={1}
+                style={{ overflow: 'hidden' }}
+                onInput={e => {
+                  e.target.style.height = 'auto';
+                  e.target.style.height = e.target.scrollHeight + 'px';
+                }}
+              />
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Trạng thái</Form.Label>
@@ -224,13 +269,13 @@ export default function MaintenanceDetailPage() {
                     </td>
                     <td>
                       {h.cost != null
-                        ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(h.cost)
+                        ? (isSmall ? formatShortCurrency(h.cost) : formatCurrency(h.cost))
                         : '-'}
                     </td>
                     <td>{getUserName(h.technician_id)}</td>
                     <td>
-                      <Button variant="warning" size="sm" className="me-2" onClick={() => handleEdit(h)}>✏️ Sửa</Button>
-                      <Button variant="danger" size="sm" onClick={() => handleDeleteClick(h)}>🗑️ Xóa</Button>
+                      <Button variant="warning" size="sm" className="me-2" onClick={() => handleEdit(h)}>✏️Sửa</Button>
+                      <Button variant="danger" size="sm" onClick={() => handleDeleteClick(h)}>🗑️Xóa</Button>
                     </td>
                   </tr>
                 ))}
@@ -306,17 +351,13 @@ export default function MaintenanceDetailPage() {
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Kỹ thuật viên</Form.Label>
-              <Form.Select
-                value={formData.technician_id}
-                onChange={e => setFormData({ ...formData, technician_id: e.target.value })}
-              >
-                <option value="">-- Chọn kỹ thuật viên --</option>
-                {users.map(u => (
-                  <option key={u.ID || u.id} value={u.ID || u.id}>
-                    #{u.ID || u.id} - {u.Name || u.username}
-                  </option>
-                ))}
-              </Form.Select>
+              <Select
+                options={technicianOptions}
+                value={technicianOptions.find(opt => opt.value === parseInt(formData.technician_id)) || null}
+                onChange={option => setFormData({ ...formData, technician_id: option ? option.value : '' })}
+                placeholder="Chọn kỹ thuật viên..."
+                isSearchable={true}
+              />
             </Form.Group>
           </Form>
         </Modal.Body>

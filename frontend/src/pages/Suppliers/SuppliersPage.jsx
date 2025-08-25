@@ -98,9 +98,8 @@ export default function SupplierPage() {
 
 
   return (
-    <div className="container mt-2">
+    <div className="container mt-1">
       <ToastContainer />
-
       {/* Header + nút thêm */}
       <div className="d-flex align-items-center justify-content-between mb-3">
         <h3 className="mb-0">Danh sách nhà cung cấp</h3>
@@ -136,7 +135,7 @@ export default function SupplierPage() {
                         color: "#0d6efd",
                         textDecoration: "none",
                         display: "-webkit-box",
-                        WebkitLineClamp: 1,
+                        WebkitLineClamp: 2,
                         WebkitBoxOrient: "vertical",
                         overflow: "hidden",
                         textOverflow: "ellipsis",
@@ -154,7 +153,7 @@ export default function SupplierPage() {
                     <span
                       style={{
                         display: "-webkit-box",
-                        WebkitLineClamp: 1,
+                        WebkitLineClamp: 2,
                         WebkitBoxOrient: "vertical",
                         overflow: "hidden",
                         textOverflow: "ellipsis",
@@ -168,8 +167,8 @@ export default function SupplierPage() {
                     </span>
                   </td>
                   <td>
-                    <Button variant="warning" size="sm" className="me-2" onClick={() => handleEdit(s)}>✏️ Sửa</Button>
-                    <Button variant="danger" size="sm" onClick={() => handleDelete(s)}>🗑️ Xóa</Button>
+                    <Button variant="warning" size="sm" className="me-2" onClick={() => handleEdit(s)}>✏️Sửa</Button>
+                    <Button variant="danger" size="sm" onClick={() => handleDelete(s)}>🗑️Xóa</Button>
                   </td>
                 </tr>
               ))

@@ -16,70 +16,100 @@ func NewSearchRepository(db *sql.DB) *SearchRepository {
 
 // Tìm kiếm chung
 func (r *SearchRepository) SearchAll(keyword string) ([]models.SearchResult, error) {
-	likeKeyword := "%" + keyword + "%"
-	results := []models.SearchResult{}
+    if keyword == "" {
+        return []models.SearchResult{}, nil
+    }
 
-	// --- equipments ---
-	rows, err := r.DB.Query("SELECT id, name FROM equipments WHERE name LIKE ? COLLATE utf8_general_ci", likeKeyword)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	for rows.Next() {
-		var id int
-		var name string
-		if err := rows.Scan(&id, &name); err != nil {
-			return nil, err
-		}
-		results = append(results, models.SearchResult{ID: id, Name: name, Type: "equipment"})
-	}
+    likeKeyword := "%" + keyword + "%"   // Cho WHERE
+    startKeyword := keyword + "%"         // Cho ORDER BY ưu tiên
 
-	// --- maintenance schedules ---
-	rows2, err := r.DB.Query("SELECT id, description FROM maintenance_schedules WHERE description LIKE ? COLLATE utf8_general_ci", likeKeyword)
-	if err != nil {
-		return nil, err
-	}
-	defer rows2.Close()
-	for rows2.Next() {
-		var id int
-		var desc string
-		if err := rows2.Scan(&id, &desc); err != nil {
-			return nil, err
-		}
-		results = append(results, models.SearchResult{ID: id, Name: desc, Type: "maintenance"})
-	}
+    results := []models.SearchResult{}
 
-	// --- repair histories ---
-	rows3, err := r.DB.Query("SELECT id, issue_description FROM repair_history WHERE issue_description LIKE ? COLLATE utf8_general_ci", likeKeyword)
-	if err != nil {
-		return nil, err
-	}
-	defer rows3.Close()
-	for rows3.Next() {
-		var id int
-		var issue string
-		if err := rows3.Scan(&id, &issue); err != nil {
-			return nil, err
-		}
-		results = append(results, models.SearchResult{ID: id, Name: issue, Type: "repair"})
-	}
+    // --- equipments ---
+    rows, err := r.DB.Query(
+        `SELECT id, name 
+         FROM equipments 
+         WHERE name LIKE ? COLLATE NOCASE 
+         ORDER BY CASE WHEN name LIKE ? THEN 0 ELSE 1 END, name ASC`,
+        likeKeyword, startKeyword,
+    )
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
+    for rows.Next() {
+        var id int
+        var name string
+        if err := rows.Scan(&id, &name); err != nil {
+            return nil, err
+        }
+        results = append(results, models.SearchResult{ID: id, Name: name, Type: "equipment"})
+    }
 
-	// --- suppliers ---
-	rows4, err := r.DB.Query("SELECT id, name FROM suppliers WHERE name LIKE ? COLLATE utf8_general_ci", likeKeyword)
-	if err != nil {
-		return nil, err
-	}
-	defer rows4.Close()
-	for rows4.Next() {
-		var id int
-		var name string
-		if err := rows4.Scan(&id, &name); err != nil {
-			return nil, err
-		}
-		results = append(results, models.SearchResult{ID: id, Name: name, Type: "supplier"})
-	}
+    // --- maintenance schedules ---
+    rows2, err := r.DB.Query(
+        `SELECT id, description 
+         FROM maintenance_schedules 
+         WHERE description LIKE ? COLLATE NOCASE 
+         ORDER BY CASE WHEN description LIKE ? THEN 0 ELSE 1 END, description ASC`,
+        likeKeyword, startKeyword,
+    )
+    if err != nil {
+        return nil, err
+    }
+    defer rows2.Close()
+    for rows2.Next() {
+        var id int
+        var desc string
+        if err := rows2.Scan(&id, &desc); err != nil {
+            return nil, err
+        }
+        results = append(results, models.SearchResult{ID: id, Name: desc, Type: "maintenance"})
+    }
 
-	return results, nil
+    // --- repair histories ---
+    rows3, err := r.DB.Query(
+        `SELECT id, issue_description 
+         FROM repair_history 
+         WHERE issue_description LIKE ? COLLATE NOCASE 
+         ORDER BY CASE WHEN issue_description LIKE ? THEN 0 ELSE 1 END, issue_description ASC`,
+        likeKeyword, startKeyword,
+    )
+    if err != nil {
+        return nil, err
+    }
+    defer rows3.Close()
+    for rows3.Next() {
+        var id int
+        var issue string
+        if err := rows3.Scan(&id, &issue); err != nil {
+            return nil, err
+        }
+        results = append(results, models.SearchResult{ID: id, Name: issue, Type: "repair"})
+    }
+
+    // --- suppliers ---
+    rows4, err := r.DB.Query(
+        `SELECT id, name 
+         FROM suppliers 
+         WHERE name LIKE ? COLLATE NOCASE 
+         ORDER BY CASE WHEN name LIKE ? THEN 0 ELSE 1 END, name ASC`,
+        likeKeyword, startKeyword,
+    )
+    if err != nil {
+        return nil, err
+    }
+    defer rows4.Close()
+    for rows4.Next() {
+        var id int
+        var name string
+        if err := rows4.Scan(&id, &name); err != nil {
+            return nil, err
+        }
+        results = append(results, models.SearchResult{ID: id, Name: name, Type: "supplier"})
+    }
+
+    return results, nil
 }
 
 // Lấy chi tiết theo type + id

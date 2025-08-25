@@ -154,9 +154,9 @@ export default function EquipmentDetailPage() {
         <Breadcrumbs />
         {/* Thông tin thiết bị */}
         <div className="col-md-4 mb-4">
-          <div style={{border:"1px solid #cac2c2ff", borderRadius:"10px", padding:"20px", backgroundColor:"#fff", boxShadow:"0 4px 12px rgba(0,0,0,0.1)", transition:"all 0.3s ease"}}>
+          <div style={{border:"1px solid #cac2c2ff", borderRadius:"10px", padding:"10px", backgroundColor:"#fff", boxShadow:"0 4px 12px rgba(0,0,0,0.1)", transition:"all 0.3s ease"}}>
             <h5>Thông tin thiết bị</h5>
-            <Form.Group className="mb-3 mt-4">
+            <Form.Group className="mb-3 mt-3">
               <Form.Label>Tên thiết bị</Form.Label>
               <Form.Control as="textarea" value={equipment.name} readOnly />
             </Form.Group>
@@ -246,8 +246,8 @@ export default function EquipmentDetailPage() {
                     <td>{getUserName(m.technician_id)}</td>
                     <td>{m.scheduled_date ? new Date(m.scheduled_date).toLocaleDateString('vi-VN') : ''}</td>
                     <td>
-                      <Button variant="warning" size="sm" className="me-2" onClick={() => handleEdit(m)}>✏️ Sửa</Button>
-                      <Button variant="danger" size="sm" onClick={() => handleDeleteClick(m)}>🗑️ Xóa</Button>
+                      <Button variant="warning" size="sm" className="me-2" onClick={() => handleEdit(m)}>✏️Sửa</Button>
+                      <Button variant="danger" size="sm" onClick={() => handleDeleteClick(m)}>🗑️Xóa</Button>
                     </td>
                   </tr>
                 ))}
