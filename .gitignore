@@ -1,3 +1,10 @@
 build/bin
 node_modules
 frontend/dist
+# Ignore SQLite database file
+equipment_maintenance.db
+
+# Ignore backup / cache
+*.db-journal
+*.db-shm
+*.db-wal
